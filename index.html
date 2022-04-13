@@ -1,18 +1,21 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
+		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<form id="encForm">
-			<label for="enc">Enter text to be Encrypted</label>
-			<input name="enc" id="enc" placeholder="Enter plain text"> </input>
-		</form>
-		<p id="enc-result"></p>
-		<form id="decForm">
-			<label for="dec">Enter text to be Decrypted</label>
-			<input name="dec" id="dec" placeholder="Enter text to Decrypt"> </input>				
-		</form>
-		<p id="dec-result"></p>	
+		<div class="layout">
+			<form id="encForm">
+				<label for="enc">Enter text to be Encrypted</label>
+				<input name="enc" id="enc" placeholder="Enter plain text"> </input>
+				<p id="enc-result"></p>
+			</form>
+			<form id="decForm">
+				<label for="dec">Enter text to be Decrypted</label>
+				<input name="dec" id="dec" placeholder="Enter text to Decrypt"> </input>
+				<p id="dec-result"></p>		
+			</form>
+		</div>
 
 		<script src="wasm_exec.js"></script>
 		<script>
