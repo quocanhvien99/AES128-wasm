@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"syscall/js"
@@ -11,7 +12,12 @@ import (
 
 func encrypt(this js.Value, msg []js.Value) interface{} {
 	text := []byte(msg[0].String())
-    key := []byte("passphrasewhichneedstobe32bytes!")
+    key := []byte(msg[1].String())
+
+    if len(msg[1].String()) != 16 {
+        js.Global().Call("alert", "Length of secret key should be 16 for 128 bits key size")
+        return nil
+    }
 
     // generate a new aes cipher using our 32 byte long key
     c, err := aes.NewCipher(key)
@@ -44,16 +50,21 @@ func encrypt(this js.Value, msg []js.Value) interface{} {
     // additional data and appends the result to dst, returning the updated
     // slice. The nonce must be NonceSize() bytes long and unique for all
     // time, for a given key.
-	buf := gcm.Seal(nonce, nonce, text, nil)
-	dst:= js.Global().Get("Uint8Array").New(len(buf))
-	js.CopyBytesToJS(dst, buf)
-    return dst
+	//buf := gcm.Seal(nonce, nonce, text, nil)
+	//dst:= js.Global().Get("Uint8Array").New(len(buf))
+	//js.CopyBytesToJS(dst, buf)
+    
+    return hex.EncodeToString(gcm.Seal(nonce, nonce, text, nil))
 }
 
-func decrypt(this js.Value, cipherbuf []js.Value) interface{} {
-	key := []byte("passphrasewhichneedstobe32bytes!")
-	ciphertext:=make([]byte, cipherbuf[0].Get("length").Int())
-	js.CopyBytesToGo(ciphertext, cipherbuf[0])
+func decrypt(this js.Value, cipherhex []js.Value) interface{} {
+	key := []byte(cipherhex[1].String())
+	ciphertext, err := hex.DecodeString(cipherhex[0].String())
+	//js.CopyBytesToGo(ciphertext, cipherbuf[0])
+    if len(cipherhex[1].String()) != 16 {
+        js.Global().Call("alert", "Length of secret key should be 16 for 128 bits key size")
+        return nil
+    }
 
     c, err := aes.NewCipher(key)
     if err != nil {
