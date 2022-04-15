@@ -5,19 +5,21 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"syscall/js"
 )
 
 func encrypt(this js.Value, msg []js.Value) interface{} {
-	text := []byte(msg[0].String())
-    key := encodeKey(msg[1].String())
-
-    if len(msg[1].String()) != 16 {
-        js.Global().Call("alert", "Length of secret key should be 16 for 128 bits key size")
+    err := validKey(msg[1].String())
+    if err != nil {
+        js.Global().Call("alert",string(err.Error()))
         return nil
     }
+
+	text := []byte(msg[0].String())
+    key := encodeKey(msg[1].String())
 
     // generate a new aes cipher using our 32 byte long key
     c, err := aes.NewCipher(key)
@@ -57,14 +59,17 @@ func encrypt(this js.Value, msg []js.Value) interface{} {
     return hex.EncodeToString(gcm.Seal(nonce, nonce, text, nil))
 }
 
-func decrypt(this js.Value, cipherhex []js.Value) interface{} {
+func decrypt(this js.Value, cipherhex []js.Value) interface{} {    
+    err := validKey(cipherhex[1].String())
+    if err != nil {
+        js.Global().Call("alert",err.Error())
+        return nil
+    }
+
 	key := encodeKey(cipherhex[1].String())
 	ciphertext, err := hex.DecodeString(cipherhex[0].String())
 	//js.CopyBytesToGo(ciphertext, cipherbuf[0])
-    if len(cipherhex[1].String()) != 16 {
-        js.Global().Call("alert", "Length of secret key should be 16 for 128 bits key size")
-        return nil
-    }
+    
 
     c, err := aes.NewCipher(key)
     if err != nil {
@@ -105,4 +110,11 @@ func encodeKey(keys string) []byte {
 		key[keylen-i-1] = keys[i] << 2
 	}
     return key
+}
+func validKey(key string) error {
+    keylen:=len(key)
+    if keylen != 16 && keylen!=24 && keylen!=32 {
+        return errors.New("Length of secret key should be 16, 24 or 32")
+    }
+    return nil
 }
