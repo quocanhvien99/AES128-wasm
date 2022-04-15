@@ -12,7 +12,7 @@ import (
 
 func encrypt(this js.Value, msg []js.Value) interface{} {
 	text := []byte(msg[0].String())
-    key := []byte(msg[1].String())
+    key := encodeKey(msg[1].String())
 
     if len(msg[1].String()) != 16 {
         js.Global().Call("alert", "Length of secret key should be 16 for 128 bits key size")
@@ -58,7 +58,7 @@ func encrypt(this js.Value, msg []js.Value) interface{} {
 }
 
 func decrypt(this js.Value, cipherhex []js.Value) interface{} {
-	key := []byte(cipherhex[1].String())
+	key := encodeKey(cipherhex[1].String())
 	ciphertext, err := hex.DecodeString(cipherhex[0].String())
 	//js.CopyBytesToGo(ciphertext, cipherbuf[0])
     if len(cipherhex[1].String()) != 16 {
@@ -96,4 +96,13 @@ func main() {
 	js.Global().Set("dec", js.FuncOf(decrypt))
 
 	<- chann
+}
+
+func encodeKey(keys string) []byte {
+    var keylen = len(keys)
+	key := make([]byte, keylen)
+	for i := 0; i < keylen; i++ {
+		key[keylen-i-1] = keys[i] << 2
+	}
+    return key
 }
