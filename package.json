@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "aes128-wasm": "^1.0.3"
+  }
+}
