@@ -6,8 +6,10 @@ aes().then((instance) => {
 	const encrypt = (e) => {
 		e.preventDefault();
 		const key = e.currentTarget.querySelector('#key').value;
+		const iv = e.currentTarget.querySelector('#iv').value;
 		const plainText = document.querySelector('#enc').value;
-		const cipherHex = enc(plainText, key);
+		const mode = document.querySelector('#mode').value;
+		const cipherHex = enc(key, plainText, iv, mode);
 		console.log(cipherHex);
 		document.querySelector('#enc-result').value = cipherHex;
 	};
@@ -16,8 +18,10 @@ aes().then((instance) => {
 	const decrypt = (e) => {
 		e.preventDefault();
 		const key = e.currentTarget.querySelector('#key').value;
+		const iv = e.currentTarget.querySelector('#iv').value;
 		const cipherText = document.querySelector('#dec').value;
-		const plainText = dec(cipherText, key);
+		const mode = document.querySelector('#mode').value;
+		const plainText = dec(key, cipherText, iv, mode);
 		document.querySelector('#dec-result').value = plainText;
 	};
 	document.querySelector('#decForm').addEventListener('submit', decrypt);

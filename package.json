@@ -1,5 +1,5 @@
 {
-  "dependencies": {
-    "aes-wasm-quocanhv": "^1.0.1"
-  }
+	"dependencies": {
+		"aes-wasm-quocanhv": "^1.0.3"
+	}
 }

@@ -5,98 +5,53 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"syscall/js"
 )  
-  
+
 func main() {  
-	chann:=make(chan bool)
+	 // 32 bit length key, Most be secured in production ENV  
+   // No Hardcoding of the key  
+   key := "myverystrongpasswordo32bitlength"  
+   
+   // IN OFB Mode the plaintext shoun't be Must be Block Size of AES (Multiple of 16)  
+   // Other WIse Paddign needs to be perfomed  
+   plainText := "Hello sdf sdf sdfsfsdf" 
+   fmt.Printf("Original Text:  %s\n",plainText)   
+  
+   //IV Length Must be equal to Block Size.  
+//    iv := make([]byte, aes.BlockSize)  
+//    if _, err := io.ReadFull(rand.Reader, iv); err != nil {  
+//       panic(err.Error())  
+//    }  
+	iv:=[]byte("0123456789abcdef")
 
-	js.Global().Set("enc", js.FuncOf(encrypt))
-	js.Global().Set("dec", js.FuncOf(decrypt))
-
-	<- chann
-} 
-
-// encrypt(key, plaintext, iv, mode )
-func encrypt(this js.Value, params []js.Value) interface{} {
-    mode := params[3].String()
-
-	//valid key
-	key := params[0].String()
-	err := validKey(key)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
-        return nil
-    }
-	key = encodeKey(key)
 	
-	//valid iv
-	err = validIV(params[2].String(), mode)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
-        return nil
-    }
-	iv := []byte(params[2].String())
+	ciphertext := CBCEncrypter(key,plainText,iv)  
+	fmt.Printf("CBC Encrypted Text:  %s\n", ciphertext)  
+	ret := CBCDecrypter(key,ciphertext,iv)  
+	fmt.Printf("CBC Decrypted Text:  %s\n", ret)
 
-	plaintext := params[1].String()
-	var cipher string
+	ciphertext = GCMEncrypter(key,plainText,[]byte("123456789012"))  
+   fmt.Printf("GCM Encrypted Text:  %s\n", ciphertext)  
+   ret = GCMDecrypter(key,ciphertext,[]byte("123456789012"))  
+   fmt.Printf("GCM Decrypted Text:  %s\n", ret)
 
-	switch mode {
-		case "GCM":
-			cipher = GCMEncrypter(key, plaintext, iv)
-		case "CBC":
-			cipher = CBCEncrypter(key, plaintext, iv)
-		case "CFB":
-			cipher = CFBEncrypter(key, plaintext, iv)
-		case "CTR":
-			cipher = CTREncrypter(key, plaintext, iv)
-		case "OFB":
-			cipher = OFBEncrypter(key, plaintext, iv)	
-	}
+   ciphertext = CTREncrypter(key,plainText,iv)  
+   fmt.Printf("CTR Encrypted Text:  %s\n", ciphertext)  
+   ret = CTRDecrypter(key,ciphertext,iv)  
+   fmt.Printf("CTR Decrypted Text:  %s\n", ret)
 
-	return cipher
-}
-// decrypt(key, cipher, iv, mode )
-func decrypt(this js.Value, params []js.Value) interface{} {
-    mode := params[3].String()
+   ciphertext = OFBEncrypter(key,plainText,iv)  
+   fmt.Printf("OFB Encrypted Text:  %s\n", ciphertext)  
+   ret = OFBDecrypter(key,ciphertext,iv)  
+   fmt.Printf("OFB Decrypted Text:  %s\n", ret)
 
-    //valid key
-	key := params[0].String()
-	err := validKey(key)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
-        return nil
-    }
-	key = encodeKey(key)
+   ciphertext = CFBEncrypter(key,plainText,iv)  
+   fmt.Printf("CFB Encrypted Text:  %s\n", ciphertext)  
+   ret = CFBDecrypter(key,ciphertext,iv)  
+   fmt.Printf("CFB Decrypted Text:  %s\n", ret)
 
-	//valid iv
-	err = validIV(params[2].String(), mode)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
-        return nil
-    }
-	iv := []byte(params[2].String())
-
-	cipher:=params[1].String()
-	var plaintext string
-
-	switch mode {
-		case "GCM":
-			plaintext = GCMDecrypter(key, cipher, iv)
-		case "CBC":
-			plaintext = CBCDecrypter(key, cipher, iv)
-		case "CFB":
-			plaintext = CFBDecrypter(key, cipher, iv)
-		case "CTR":
-			plaintext = CTRDecrypter(key, cipher, iv)
-		case "OFB":
-			plaintext = OFBDecrypter(key, cipher, iv)	
-	}
-
-	return plaintext
-}
+} 
 
 // Appends padding.
 func pkcs7Pad(data []byte, blocklen int) ([]byte, error) {
@@ -301,29 +256,3 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
    
 	return s  
  }
-
- func encodeKey(keys string) string {
-    var keylen = len(keys)
-	key := make([]byte, keylen)
-	for i := 0; i < keylen; i++ {
-		key[keylen-i-1] = keys[i] << 2
-	}
-    return string(key)
-}
-func validKey(key string) error {
-    keylen:=len(key)
-    if keylen != 16 && keylen!=24 && keylen!=32 {
-        return errors.New("Length of secret key should be 16, 24 or 32")
-    }
-    return nil
-}
-func validIV(iv string, mode string) error {
-    ivlen:=len(iv)
-    if mode == "GCM" && ivlen != 12 {
-        return errors.New("Length of iv should be 12")
-    }
-    if mode != "GCM" && ivlen != 16 {
-        return errors.New("Length of iv should be 16")
-    }
-    return nil
-}

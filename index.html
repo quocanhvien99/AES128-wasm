@@ -24,8 +24,18 @@
 							id="enc"
 							placeholder="Enter plain text"
 						></textarea>
+						<label for="mode">Select Mode</label>
+						<select class="mb-3" name="mode" id="mode" style="width: 100%">
+							<option value="GCM" selected>GCM</option>
+							<option value="CBC">CBC</option>
+							<option value="CFB">CFB</option>
+							<option value="CTR">CTR</option>
+							<option value="OFB">OFB</option>
+						</select>
 						<label for="key">Enter Secret Key</label>
-						<input type="text" id="key" style="width: 100%" placeholder="Enter secret key" />
+						<input class="mb-3" type="text" id="key" style="width: 100%" placeholder="Enter secret key" />
+						<label for="iv">Enter IV</label>
+						<input type="text" id="iv" style="width: 100%" placeholder="Enter IV" />
 						<button class="btn btn-primary mt-3">Encrypt</button>
 					</form>
 					<label for="enc-result">AES Encrypted Output:</label>
@@ -52,8 +62,18 @@
 							id="dec"
 							placeholder="Result goes here"
 						></textarea>
+						<label for="mode">Select Mode</label>
+						<select class="mb-3" name="mode" id="mode" style="width: 100%">
+							<option value="GCM" selected>GCM</option>
+							<option value="CBC">CBC</option>
+							<option value="CFB">CFB</option>
+							<option value="CTR">CTR</option>
+							<option value="OFB">OFB</option>
+						</select>
 						<label for="key">Enter Secret Key</label>
-						<input type="text" id="key" style="width: 100%" placeholder="Enter secret key" />
+						<input class="mb-3" type="text" id="key" style="width: 100%" placeholder="Enter secret key" />
+						<label for="iv">Enter IV</label>
+						<input type="text" id="iv" style="width: 100%" placeholder="Enter IV" />
 						<button class="btn btn-primary mt-3">Decrypt</button>
 					</form>
 					<label for="dec-result">AES Decrypted Output:</label>

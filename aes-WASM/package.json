@@ -1,6 +1,6 @@
 {
 	"name": "aes-wasm-quocanhv",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "```js\r const aes = require('aes128-wasm');",
 	"main": "index.js",
 	"scripts": {
