@@ -5,8 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"syscall/js"
 )  
   
@@ -26,16 +24,16 @@ func encrypt(this js.Value, params []js.Value) interface{} {
 	//valid key
 	key := params[0].String()
 	err := validKey(key)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
+    if len(err) != 0 {
+        js.Global().Call("alert",err)
         return nil
     }
 	key = encodeKey(key)
 	
 	//valid iv
 	err = validIV(params[2].String(), mode)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
+    if len(err) != 0 {
+        js.Global().Call("alert",err)
         return nil
     }
 	iv := []byte(params[2].String())
@@ -65,16 +63,16 @@ func decrypt(this js.Value, params []js.Value) interface{} {
     //valid key
 	key := params[0].String()
 	err := validKey(key)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
+    if len(err) != 0 {
+        js.Global().Call("alert",err)
         return nil
     }
 	key = encodeKey(key)
 
 	//valid iv
 	err = validIV(params[2].String(), mode)
-    if err != nil {
-        js.Global().Call("alert",string(err.Error()))
+    if len(err) != 0 {
+        js.Global().Call("alert",err)
         return nil
     }
 	iv := []byte(params[2].String())
@@ -99,9 +97,9 @@ func decrypt(this js.Value, params []js.Value) interface{} {
 }
 
 // Appends padding.
-func pkcs7Pad(data []byte, blocklen int) ([]byte, error) {
+func pkcs7Pad(data []byte, blocklen int) ([]byte, string) {
     if blocklen <= 0 {
-        return nil, fmt.Errorf("invalid blocklen %d", blocklen)
+        return nil, "invalid blocklen"
     }
     padlen := 1
     for ((len(data) + padlen) % blocklen) != 0 {
@@ -109,30 +107,30 @@ func pkcs7Pad(data []byte, blocklen int) ([]byte, error) {
     }
 
     pad := bytes.Repeat([]byte{byte(padlen)}, padlen)
-    return append(data, pad...), nil
+    return append(data, pad...), ""
 }
 
 // Returns slice of the original data without padding.
-func pkcs7Unpad(data []byte, blocklen int) ([]byte, error) {
+func pkcs7Unpad(data []byte, blocklen int) ([]byte, string) {
     if blocklen <= 0 {
-        return nil, fmt.Errorf("invalid blocklen %d", blocklen)
+        return nil, "invalid blocklen"
     }
     if len(data)%blocklen != 0 || len(data) == 0 {
-        return nil, fmt.Errorf("invalid data len %d", len(data))
+        return nil, "invalid data len"
     }
     padlen := int(data[len(data)-1])
     if padlen > blocklen || padlen == 0 {
-        return nil, fmt.Errorf("invalid padding")
+        return nil, "invalid padding"
     }
     // check padding
     pad := data[len(data)-padlen:]
     for i := 0; i < padlen; i++ {
         if pad[i] != byte(padlen) {
-            return nil, fmt.Errorf("invalid padding")
+            return nil, "invalid padding"
         }
     }
 
-    return data[:len(data)-padlen], nil
+    return data[:len(data)-padlen], ""
 }
 func GCMEncrypter(key string, plaintext string, iv []byte ) string {  
 	block, err := aes.NewCipher([]byte(key))  
@@ -171,7 +169,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	   panic(err)  
 	}   
 
-	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
+	origData, _ := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
 	// include it at the beginning of the ciphertext.  
 	ciphertext := make([]byte, len(origData))  
@@ -195,7 +193,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 
 	// CryptBlocks can work in-place if the two arguments are the same.  
 	mode.CryptBlocks(origData, ciphertext)  
-	origData, err = pkcs7Unpad(origData, aes.BlockSize)
+	origData, _ = pkcs7Unpad(origData, aes.BlockSize)
 	s := string(origData)  
    
 	return s
@@ -208,7 +206,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	   panic(err)  
 	}  
 
-	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
+	origData, _ := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
 	ciphertext := make([]byte, len(origData))  
 	stream := cipher.NewCTR(block, iv)
@@ -222,7 +220,6 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	if err != nil {  
 	   panic(err)  
 	}  
-	ciphertext = ciphertext  
 	// CBC mode always works in whole blocks.  
    if len(ciphertext)%aes.BlockSize != 0 {  
 	   panic("ciphertext is not a multiple of the block size")  
@@ -231,7 +228,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	origData := make([]byte, len(ciphertext))
 
 	mode.XORKeyStream(origData, ciphertext)  
-	origData, err = pkcs7Unpad(origData, aes.BlockSize)
+	origData, _ = pkcs7Unpad(origData, aes.BlockSize)
 	s := string(origData)  
    
 	return s  
@@ -243,7 +240,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	   panic(err)  
 	}  
 
-	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
+	origData, _ := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
 	ciphertext := make([]byte, len(origData))
 	stream := cipher.NewOFB(block, iv)  
@@ -267,7 +264,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	origData := make([]byte, len(ciphertext))
 
 	mode.XORKeyStream(origData, ciphertext)  
-	origData, err = pkcs7Unpad(origData, aes.BlockSize)
+	origData, _ = pkcs7Unpad(origData, aes.BlockSize)
 	s := string(origData)  
 	return s  
  }
@@ -307,20 +304,20 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	}
     return string(key)
 }
-func validKey(key string) error {
+func validKey(key string) string {
     keylen:=len(key)
     if keylen != 16 && keylen!=24 && keylen!=32 {
-        return errors.New("Length of secret key should be 16, 24 or 32")
+        return "Length of secret key should be 16, 24 or 32"
     }
-    return nil
+    return ""
 }
-func validIV(iv string, mode string) error {
+func validIV(iv string, mode string) string {
     ivlen:=len(iv)
     if mode == "GCM" && ivlen != 12 {
-        return errors.New("Length of iv should be 12")
+        return "Length of iv should be 12"
     }
     if mode != "GCM" && ivlen != 16 {
-        return errors.New("Length of iv should be 16")
+        return "Length of iv should be 16"
     }
-    return nil
+    return ""
 }
