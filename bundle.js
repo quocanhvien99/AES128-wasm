@@ -29122,7 +29122,7 @@ module.exports = () => {
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":165,"crypto":75,"fs":1,"util":205}],208:[function(require,module,exports){
-const aes = require('./aes-WASM/index.js');
+const aes = require('aes-wasm-quocanhv');
 
 aes().then((instance) => {
 	const { enc, dec } = instance;
@@ -29151,4 +29151,4 @@ aes().then((instance) => {
 	document.querySelector('#decForm').addEventListener('submit', decrypt);
 });
 
-},{"./aes-WASM/index.js":207}]},{},[208]);
+},{"aes-wasm-quocanhv":207}]},{},[208]);
