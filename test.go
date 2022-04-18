@@ -129,9 +129,9 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
 	// include it at the beginning of the ciphertext.  
-	ciphertext := make([]byte, aes.BlockSize+len(origData))  
+	ciphertext := make([]byte, len(origData))  
 	mode := cipher.NewCBCEncrypter(block, iv)  
-	mode.CryptBlocks(ciphertext[aes.BlockSize:], origData)  
+	mode.CryptBlocks(ciphertext, origData)  
 	return hex.EncodeToString(ciphertext)
  }  
  
@@ -141,7 +141,6 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	if err != nil {  
 	   panic(err)  
 	}  
-	ciphertext = ciphertext[aes.BlockSize:]  
 	// CBC mode always works in whole blocks.  
    if len(ciphertext)%aes.BlockSize != 0 {  
 	   panic("ciphertext is not a multiple of the block size")  
@@ -166,9 +165,9 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 
 	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
-	ciphertext := make([]byte, aes.BlockSize+len(origData))  
+	ciphertext := make([]byte, len(origData))  
 	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], origData)  
+	stream.XORKeyStream(ciphertext, origData)  
 	return hex.EncodeToString(ciphertext)  
  }  
  
@@ -178,7 +177,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	if err != nil {  
 	   panic(err)  
 	}  
-	ciphertext = ciphertext[aes.BlockSize:]  
+	ciphertext = ciphertext  
 	// CBC mode always works in whole blocks.  
    if len(ciphertext)%aes.BlockSize != 0 {  
 	   panic("ciphertext is not a multiple of the block size")  
@@ -201,9 +200,9 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 
 	origData, err := pkcs7Pad([]byte(plaintext), aes.BlockSize)
 
-	ciphertext := make([]byte, aes.BlockSize+len(origData))
+	ciphertext := make([]byte, len(origData))
 	stream := cipher.NewOFB(block, iv)  
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], origData)  
+	stream.XORKeyStream(ciphertext, origData)  
 	return hex.EncodeToString(ciphertext)  
  }  
    
@@ -214,8 +213,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	block, err := aes.NewCipher([]byte(key))  
 	if err != nil {
 	   panic(err)  
-	}  
-	ciphertext = ciphertext[aes.BlockSize:]  
+	}
 	// CBC mode always works in whole blocks.  
 	if len(ciphertext)%aes.BlockSize != 0 {  
 	   panic("ciphertext is not a multiple of the block size")  
@@ -234,9 +232,9 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	if err != nil {  
 	   panic(err)  
 	}  
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))  
+	ciphertext := make([]byte, len(plaintext))  
 	stream := cipher.NewCFBEncrypter(block, iv)  
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(plaintext))  
+	stream.XORKeyStream(ciphertext, []byte(plaintext))  
 	return hex.EncodeToString(ciphertext)  
  }  
  
@@ -246,8 +244,7 @@ func GCMEncrypter(key string, plaintext string, iv []byte ) string {
 	block, err := aes.NewCipher([]byte(key))  
 	if err != nil {  
 	   panic(err)  
-	}  
-	ciphertext = ciphertext[aes.BlockSize:]  
+	}
    
 	stream := cipher.NewCFBDecrypter(block, iv)  
 	// XORKeyStream can work in-place if the two arguments are the same.  
