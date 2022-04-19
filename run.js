@@ -1,4 +1,4 @@
-const aes = require('./aes-WASM/index');
+const aes = require('aes-wasm-quocanhv');
 
 aes().then((instance) => {
 	const { enc, dec } = instance;

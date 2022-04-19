@@ -1,5 +1,13 @@
 {
 	"dependencies": {
-		"aes-wasm-quocanhv": "^1.0.4"
+		"aes-wasm-quocanhv": "^1.0.4",
+		"util": "^0.12.4"
+	},
+	"scripts": {
+		"build": "webpack"
+	},
+	"devDependencies": {
+		"webpack": "^5.0.0-rc.6",
+		"webpack-cli": "^4.9.2"
 	}
 }
